@@ -264,7 +264,7 @@ class LMSensorsCollector:
         try:
             for chip in sensors.iter_detected_chips():
                 for feature in chip:
-                    status_metrics.add_metric([chip, chip.adapter_name, feature.label], feature.get_value())
+                    status_metrics.add_metric([str(chip), chip.adapter_name, feature.label], feature.get_value())
         except:
             print("Error while reading chip information")
         finally:
