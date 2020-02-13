@@ -263,10 +263,13 @@ class LMSensorsCollector:
         sensors.init()
         try:
             for chip in sensors.iter_detected_chips():
-                for feature in chip:
-                    status_metrics.add_metric([chip, chip.adapter_name, feature.label], feature.get_value())
-        except:
-            raise
+                try:
+                    for feature in chip:
+                        status_metrics.add_metric([chip, chip.adapter_name, feature.label], feature.get_value())
+                except sensors.SensorsError:
+                    print("Chip '{}' at '{}' can't read".format(chip, chip.adapter_name))
+                except:
+                    raise
         finally:
             sensors.cleanup()
 
