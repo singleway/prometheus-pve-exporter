@@ -9,6 +9,7 @@ from proxmoxer import ProxmoxAPI
 from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_client.core import GaugeMetricFamily
 import sensors
+import subprocess
 
 class StatusCollector(object):
     """
@@ -272,6 +273,26 @@ class LMSensorsCollector:
 
         yield status_metrics
 
+class CPUFreqCollector:
+    def collect(self):
+        status_metrics = GaugeMetricFamily(
+            'pve_host_cpufreq',
+            'CPU freq info',
+            labels=['max_freq', 'min_freq'])
+            
+        out = subprocess.Popen(['lscpu'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, _ = out.communicate()
+        for l in stdout.split(b"\n"):
+            if l.startswith(b"CPU MHz"):
+                cur_freq = float(l.split(b":").lstrip())
+            elif l.startswith(b"CPU max MHz"):
+                max_freq = float(l.split(b":").lstrip())
+            elif l.startswith(b"CPU min MHz"):
+                min_freq = float(l.split(b":").lstrip())
+        status_metrics.add_metric([max_freq, min_freq], cur_freq)
+
+        yield status_metrics
+        
 
 def collect_pve(config, host):
     """Scrape a host and return prometheus text format for it"""
@@ -285,4 +306,5 @@ def collect_pve(config, host):
     registry.register(ClusterInfoCollector(pve))
     registry.register(VersionCollector(pve))
     registry.register(LMSensorsCollector())
+    registry.register(CPUFreqCollector())
     return generate_latest(registry)
