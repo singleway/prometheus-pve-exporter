@@ -8,6 +8,7 @@ from proxmoxer import ProxmoxAPI
 
 from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_client.core import GaugeMetricFamily
+import sensors
 
 class StatusCollector(object):
     """
@@ -244,6 +245,34 @@ class ClusterResourcesCollector(object):
 
         return itertools.chain(metrics.values(), info_metrics.values())
 
+class LMSensorsCollector:
+    """
+    Collects Proxmox VE host sensors information. E.g.:
+
+    # HELP pve_version_info Proxmox VE version info
+    # TYPE pve_version_info gauge
+    pve_version_info{release="15",repoid="7599e35a",version="4.4"} 1.0
+    """
+
+    def collect(self): # pylint: disable=missing-docstring
+        status_metrics = GaugeMetricFamily(
+            'pve_host_sensors',
+            'Sensors in each chip',
+            labels=['chip','chip_type','sensor'])
+
+        sensors.init()
+        try:
+            for chip in sensors.iter_detected_chips():
+                for feature in chip:
+                    status_metrics.add_metric([chip, chip.adapter_name, feature.label], feature.get_value())
+        except:
+            raise
+        finally:
+            sensors.cleanup()
+
+        yield status_metrics
+
+
 def collect_pve(config, host):
     """Scrape a host and return prometheus text format for it"""
 
@@ -255,4 +284,5 @@ def collect_pve(config, host):
     registry.register(ClusterNodeCollector(pve))
     registry.register(ClusterInfoCollector(pve))
     registry.register(VersionCollector(pve))
+    registry.register(LMSensorsCollector())
     return generate_latest(registry)

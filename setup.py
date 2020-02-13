@@ -27,6 +27,7 @@ setup(
         "pyyaml",
         "requests",
         'Werkzeug',
+        "PySensors"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
