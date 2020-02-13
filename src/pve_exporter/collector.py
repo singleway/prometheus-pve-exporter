@@ -286,9 +286,9 @@ class CPUFreqCollector:
             if l.startswith(b"CPU MHz"):
                 cur_freq = float(l.split(b":")[1].lstrip())
             elif l.startswith(b"CPU max MHz"):
-                max_freq = float(l.split(b":")[1].lstrip())
+                max_freq = l.split(b":")[1].lstrip()
             elif l.startswith(b"CPU min MHz"):
-                min_freq = float(l.split(b":")[1].lstrip())
+                min_freq = l.split(b":")[1].lstrip()
         status_metrics.add_metric([max_freq, min_freq], cur_freq)
 
         yield status_metrics
