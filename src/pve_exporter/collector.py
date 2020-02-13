@@ -279,16 +279,16 @@ class CPUFreqCollector:
             'pve_host_cpufreq',
             'CPU freq info',
             labels=['max_freq', 'min_freq'])
-            
+
         out = subprocess.Popen(['lscpu'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, _ = out.communicate()
         for l in stdout.split(b"\n"):
             if l.startswith(b"CPU MHz"):
-                cur_freq = float(l.split(b":").lstrip())
+                cur_freq = float(l.split(b":")[1].lstrip())
             elif l.startswith(b"CPU max MHz"):
-                max_freq = float(l.split(b":").lstrip())
+                max_freq = float(l.split(b":")[1].lstrip())
             elif l.startswith(b"CPU min MHz"):
-                min_freq = float(l.split(b":").lstrip())
+                min_freq = float(l.split(b":")[1].lstrip())
         status_metrics.add_metric([max_freq, min_freq], cur_freq)
 
         yield status_metrics
