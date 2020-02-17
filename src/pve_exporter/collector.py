@@ -319,7 +319,6 @@ class HDDTempCollector:
         cmd_params.extend(availed_disk)
         out = subprocess.Popen(cmd_params, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, _ = out.communicate()
-        print(stdout)
         for l in stdout.split(b"\n"):
             if len(l) > 0:
                 p = l.split(b":")
@@ -327,6 +326,8 @@ class HDDTempCollector:
                     [p[0].strip().decode("utf-8"), p[1].strip().decode("utf-8")],
                     float(re.search(b'\d+', p[2].strip()).group())
                 )
+
+        yield status_metrics
 
 def collect_pve(config, host):
     """Scrape a host and return prometheus text format for it"""
