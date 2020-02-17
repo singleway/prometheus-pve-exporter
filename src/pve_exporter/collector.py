@@ -323,4 +323,5 @@ def collect_pve(config, host):
     registry.register(VersionCollector(pve))
     registry.register(LMSensorsCollector())
     registry.register(CPUFreqCollector())
+    registry.register(HDDTempCollector())
     return generate_latest(registry)
