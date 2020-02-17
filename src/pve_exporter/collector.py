@@ -319,6 +319,7 @@ class HDDTempCollector:
         cmd_params.extend(availed_disk)
         out = subprocess.Popen(cmd_params, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, _ = out.communicate()
+        print(stdout)
         for l in stdout.split(b"\n"):
             if len(l) > 0:
                 p = l.split(b":")
