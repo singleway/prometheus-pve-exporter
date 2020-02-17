@@ -11,6 +11,8 @@ from prometheus_client.core import GaugeMetricFamily
 import sensors
 import subprocess
 import re
+import stat
+import os
 
 class StatusCollector(object):
     """
@@ -301,7 +303,19 @@ class HDDTempCollector:
             'Host HDD temp information',
             labels=['device', 'mode'])
 
-        out = subprocess.Popen(['hddtemp','/dev/sd[abcdefghi]'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        def __disk_exists(path):
+            try:
+                return stat.S_ISBLK(os.stat(path).st_mode)
+            except:
+                return False
+
+        availed_disk = []
+        for al in ('a','b','c','d','e'):
+            p = "/dev/sd{}".format(al)
+            if __disk_exists(p):
+                availed_disk.append(p)
+
+        out = subprocess.Popen(['hddtemp'].extend(availed_disk), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, _ = out.communicate()
         for l in stdout.split(b"\n"):
             p = l.split(b":")
