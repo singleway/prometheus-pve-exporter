@@ -307,7 +307,7 @@ class HDDTempCollector:
             p = l.split(b":")
             status_metrics.add_metric(
                 [p[0].strip().decode("utf-8"), p[1].strip().decode("utf-8")],
-                float(re.search(r'\d+', p[2]).group())
+                float(re.search(b'\d+', p[2]).group())
             )
 
 def collect_pve(config, host):
