@@ -10,6 +10,7 @@ from prometheus_client import CollectorRegistry, generate_latest
 from prometheus_client.core import GaugeMetricFamily
 import sensors
 import subprocess
+import re
 
 class StatusCollector(object):
     """
@@ -292,7 +293,22 @@ class CPUFreqCollector:
         status_metrics.add_metric([max_freq, min_freq], cur_freq)
 
         yield status_metrics
-        
+
+class HDDTempCollector:
+    def collect(self):
+        status_metrics = GaugeMetricFamily(
+            'pve_host_hdd_temp',
+            'Host HDD temp information',
+            labels=['device', 'mode'])
+
+        out = subprocess.Popen(['hddtemp','/dev/sd[abcdefghi]'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, _ = out.communicate()
+        for l in stdout.split(b"\n"):
+            p = l.split(b":")
+            status_metrics.add_metric(
+                [p[0].strip().decode("utf-8"), p[1].strip().decode("utf-8")],
+                float(re.search(r'\d+', p[2]).group())
+            )
 
 def collect_pve(config, host):
     """Scrape a host and return prometheus text format for it"""
